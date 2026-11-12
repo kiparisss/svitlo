@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,6 +36,7 @@ public class MainActivity extends Activity {
     private TextView statusTv, lineTv, todayTv, tomorrowTv, updatedTv, errorTv;
     private ImageView barIv;
     private LinearLayout card;
+    private FrameLayout widgetBox;
 
     private int dp(float v) {
         return Math.round(v * getResources().getDisplayMetrics().density);
@@ -130,6 +132,15 @@ public class MainActivity extends Activity {
         add(card, errorTv, 6);
         add(root, card, 24);
 
+        TextView wLabel = text("ВИГЛЯД ВІДЖЕТА", 12, DIM, true);
+        wLabel.setLetterSpacing(0.12f);
+        add(root, wLabel, 28);
+        widgetBox = new FrameLayout(this);
+        LinearLayout.LayoutParams wlp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(170));
+        wlp.topMargin = dp(10);
+        root.addView(widgetBox, wlp);
+
         TextView refresh = text("Оновити", 16, 0xFFFFFFFF, true);
         refresh.setGravity(Gravity.CENTER);
         refresh.setPadding(dp(16), dp(14), dp(16), dp(14));
@@ -188,7 +199,18 @@ public class MainActivity extends Activity {
         }).start();
     }
 
+    private void showWidgetPreview() {
+        try {
+            widgetBox.removeAllViews();
+            View v = SvitloWidget.buildViews(this, null).apply(this, widgetBox);
+            widgetBox.addView(v, new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        } catch (Exception ignored) {
+        }
+    }
+
     private void render(String error) {
+        showWidgetPreview();
         String q = Schedule.getQueue(this);
         for (TextView b : queueButtons) {
             boolean sel = b.getText().toString().equals(q);

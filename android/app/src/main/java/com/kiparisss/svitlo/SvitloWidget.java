@@ -50,12 +50,13 @@ public class SvitloWidget extends AppWidgetProvider {
         AppWidgetManager mgr = AppWidgetManager.getInstance(ctx);
         int[] ids = mgr.getAppWidgetIds(new ComponentName(ctx, SvitloWidget.class));
         if (ids == null || ids.length == 0) return;
-        long next = build(ctx, mgr, ids);
-        scheduleNext(ctx, next);
+        long[] change = new long[1];
+        mgr.updateAppWidget(ids, buildViews(ctx, change));
+        scheduleNext(ctx, change[0]);
     }
 
-    /** Повертає час наступної зміни стану (або -1). */
-    private static long build(Context ctx, AppWidgetManager mgr, int[] ids) {
+    /** Будує вигляд віджета; у changeOut[0] — час наступної зміни стану (або -1). */
+    public static RemoteViews buildViews(Context ctx, long[] changeOut) {
         RemoteViews rv = new RemoteViews(ctx.getPackageName(), R.layout.widget);
         Intent open = new Intent(ctx, MainActivity.class);
         rv.setOnClickPendingIntent(R.id.root, PendingIntent.getActivity(ctx, 0, open,
@@ -114,8 +115,8 @@ public class SvitloWidget extends AppWidgetProvider {
             String upd = data.updated != null ? data.updated.split(" ")[0] : null;
             rv.setTextViewText(R.id.updated, upd != null ? "Оновлено " + upd + " · ztoe.com.ua" : "ztoe.com.ua");
         }
-        mgr.updateAppWidget(ids, rv);
-        return change;
+        if (changeOut != null) changeOut[0] = change;
+        return rv;
     }
 
     private static void scheduleNext(Context ctx, long change) {
