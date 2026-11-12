@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Віджет для iPhone з графіком погодинних відключень Житомирщини">
+<meta property="og:title" content="Світло · Житомир">
+<meta property="og:description" content="Віджет для iPhone: коли буде світло. Налаштування за 2 хвилини.">
+<meta name="theme-color" content="#06050a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%237c3aed'/%3E%3Cpath d='M13.2 3 5.5 13.2h5.6L10.3 21l7.7-10.2h-5.6z' fill='white'/%3E%3C/svg%3E">
+<title>Світло · Житомир</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: одна вузька колонка на темному фіолетовому полі, як у відео — герой з віджетом, кнопка копіювання, 4 кроки, код */
+  :root{
+    --bg:#06050a; --surface:#110e1b; --surface2:#1a1529; --line:#2b2440;
+    --ink:#f4f1ff; --dim:#9b93b8; --violet:#8b5cf6; --violet2:#c084fc;
+    --on:#4ade80; --off:#fb4d6d;
+    --display:"Inter Tight","Inter",system-ui,sans-serif;
+    --text:"Inter",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--text);font-size:17px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .glow{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;z-index:0}
+  .g1{width:640px;height:640px;background:#5b21b6;opacity:.45;left:-260px;top:-220px}
+  .g2{width:560px;height:560px;background:#7e22ce;opacity:.3;right:-240px;top:520px}
+  .wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;
+    padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:48px 72px;
+    display:flex;flex-direction:column;gap:64px}
+
+  .brand{font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+  .brand b{color:var(--violet2)}
+  .hero{display:flex;flex-direction:column;gap:28px}
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(48px,11vw,84px);line-height:.95;letter-spacing:-.035em;margin:0;text-wrap:balance}
+  h1 em{font-style:normal;background:linear-gradient(90deg,#d8b4fe,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:20px;color:var(--dim);margin:0;max-width:34ch}
+  .lead b{color:var(--ink);font-weight:600}
+
+  .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .btn{appearance:none;border:0;cursor:pointer;font:600 17px var(--text);color:#fff;
+    background:linear-gradient(135deg,#9d6bff,#6d28d9);padding:16px 26px;border-radius:999px;
+    box-shadow:0 12px 40px rgba(124,58,237,.45);display:inline-flex;gap:10px;align-items:center;transition:transform .15s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn:focus-visible,.ghost:focus-visible,summary:focus-visible{outline:3px solid var(--violet2);outline-offset:3px}
+  .btn.done{background:#1f6b45;box-shadow:none}
+  .ghost{color:var(--violet2);font-weight:600;text-decoration:none;padding:14px 18px;border-radius:999px;border:1.5px solid rgba(192,132,252,.4)}
+  .meta{font-size:14px;color:var(--dim)}
+
+  /* віджет */
+  .widget{border-radius:32px;background:linear-gradient(160deg,#211a35,#0f0c18);border:1px solid #3a3054;
+    padding:24px 26px 22px;box-shadow:0 40px 120px rgba(124,58,237,.25);display:grid;grid-template-columns:1fr auto;gap:4px 16px}
+  .w-q{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--dim)}
+  .w-st{font-family:var(--display);font-weight:800;font-size:clamp(34px,8vw,46px);letter-spacing:-.02em;line-height:1.05;color:var(--off);margin-top:6px}
+  .w-ln{font-weight:600;font-size:18px}
+  .w-tm{font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .w-list{grid-row:1/5;grid-column:2;text-align:right;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--dim)}
+  .w-list span{display:block;font-family:var(--mono);font-size:13px;letter-spacing:0;color:var(--ink);font-weight:400}
+  .bars{grid-column:1/-1;display:grid;grid-template-columns:repeat(48,1fr);gap:2px;height:22px;margin-top:18px;position:relative}
+  .bars i{border-radius:2px;background:#2f5a3c}
+  .bars i.o{background:var(--off)}
+  .bars .now{position:absolute;top:-4px;bottom:-4px;width:3px;border-radius:2px;background:#fff}
+  .ticks{grid-column:1/-1;display:flex;justify-content:space-between;font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .caption{font-size:13px;color:var(--dim);text-align:center;margin-top:-14px}
+
+  h2{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-.02em;margin:0 0 20px}
+  .steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:s}
+  .steps li{counter-increment:s;display:grid;grid-template-columns:44px 1fr;gap:16px;align-items:start;
+    padding:18px 20px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}
+  .steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--display);font-weight:800;font-size:15px;
+    color:var(--violet2);border:1.5px solid rgba(192,132,252,.45);background:rgba(139,92,246,.12);
+    border-radius:999px;height:32px;display:grid;place-items:center}
+  .steps b{display:block;font-size:18px;margin-bottom:2px}
+  .steps p{margin:0;color:var(--dim);font-size:16px}
+  .steps code,.inline{font-family:var(--mono);font-size:14px;color:var(--violet2);background:rgba(139,92,246,.14);padding:2px 7px;border-radius:6px}
+  .steps a{color:var(--violet2)}
+
+  .note{padding:20px 22px;border-radius:20px;background:rgba(139,92,246,.1);border:1px solid rgba(192,132,252,.3);color:var(--dim);font-size:16px}
+  .note b{color:var(--ink)}
+
+  details{border-radius:20px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+  summary{cursor:pointer;list-style:none;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:600}
+  summary::-webkit-details-marker{display:none}
+  summary span{font-weight:400;color:var(--dim);font-size:14px}
+  pre{margin:0;max-height:460px;overflow:auto;padding:18px 22px;border-top:1px solid var(--line);background:#0b0912;
+    font:13px/1.6 var(--mono);color:#d8d0f0;tab-size:2}
+  footer{font-size:13px;color:var(--dim);display:flex;flex-direction:column;gap:6px}
+  footer a{color:var(--violet2)}
+  @media (prefers-reduced-motion:reduce){.btn{transition:none}}
+</style>
+<style>body{margin:0}</style>
+</head>
+<body>
+
+
+<div class="glow g1"></div><div class="glow g2"></div>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="brand">Світло · <b>Житомир</b></div>
+    <h1>Коли буде <em>світло?</em></h1>
+    <p class="lead">Віджет для iPhone з графіком погодинних відключень <b>Житомирщини</b>. Статус, час до вмикання і графік на добу просто на головному екрані.</p>
+
+    <div class="widget" aria-label="Приклад віджета">
+      <div class="w-q"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.5 13.4h6.2L9.8 22l8.7-11.4h-6.2z" fill="currentColor" style="color:var(--off)"/></svg>Черга 6.1</div>
+      <div class="w-st">Світла немає</div>
+      <div class="w-ln">Увімкнуть о 24:00</div>
+      <div class="w-tm">через 03:41:12</div>
+      <div class="w-list">СЬОГОДНІ<span>02:00–06:00</span><span>20:00–24:00</span></div>
+      <div class="bars" id="bars"></div>
+      <div class="ticks"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+    </div>
+    <div class="caption">Так виглядає середній віджет. Є також малий і для екрана блокування.</div>
+
+    <div class="cta">
+      <button class="btn" id="copy" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+        <span id="copyLabel">Скопіювати скрипт</span>
+      </button>
+      <a class="ghost" href="svitlo-zhytomyr.js" download>Завантажити .js</a>
+      <a class="ghost" href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank" rel="noopener">Scriptable в App Store</a>
+    </div>
+    <div class="meta">Безкоштовно · 18 КБ · 521 рядків JavaScript</div>
+  </section>
+
+  <section>
+    <h2>Налаштування за 2 хвилини</h2>
+    <ol class="steps">
+      <li><div><b>Встанови Scriptable</b><p>Безкоштовний застосунок з App Store. Саме він запускає віджет.</p></div></li>
+      <li><div><b>Додай скрипт</b><p>Натисни «Скопіювати скрипт» вище. У Scriptable натисни <code>+</code>, встав код і назви скрипт <code>svitlo-zhytomyr</code>.</p></div></li>
+      <li><div><b>Додай віджет</b><p>Затисни головний екран → <code>+</code> → Scriptable → середній розмір.</p></div></li>
+      <li><div><b>Вкажи підчергу</b><p>Затисни віджет → «Редагувати віджет». У полі Script вибери <code>svitlo-zhytomyr</code>, у полі Parameter впиши підчергу, наприклад <code>3.1</code>.</p></div></li>
+    </ol>
+  </section>
+
+  <div class="note"><b>Не знаєш свою підчергу?</b> Знайди її за адресою на <a href="https://www.ztoe.com.ua/unhooking-search.php" target="_blank" rel="noopener" style="color:var(--violet2)">сторінці графіків Житомиробленерго</a>: обери РЕМ, населений пункт і вулицю.</div>
+
+  <details>
+    <summary>Переглянути код <span>521 рядків</span></summary>
+    <pre><code id="code">Завантаження…</code></pre>
+  </details>
+
+  <footer>
+    <div>Дані беруться з <a href="https://www.ztoe.com.ua/unhooking-search.php" target="_blank" rel="noopener">сайту АТ «Житомиробленерго»</a>. Віджет неофіційний і показує лише планові графіки, аварійні відключення в нього не потрапляють.</div>
+    <div>Коли світла немає, віджет показує останній збережений графік.</div>
+  </footer>
+</main>
+
+<script>
+  const bars = document.getElementById('bars');
+  const off = i => (i >= 4 && i < 12) || i >= 40;
+  for (let i = 0; i < 48; i++) { const s = document.createElement('i'); if (off(i)) s.className = 'o'; bars.appendChild(s); }
+  const now = document.createElement('div'); now.className = 'now'; now.style.left = 'calc(' + (20.3/24*100) + '% - 1px)'; bars.appendChild(now);
+
+  let codeText = '';
+  fetch('svitlo-zhytomyr.js').then(r => r.text()).then(t => { codeText = t; document.getElementById('code').textContent = t; }).catch(() => {});
+
+  const btn = document.getElementById('copy'), label = document.getElementById('copyLabel');
+  btn.addEventListener('click', async () => {
+    const text = codeText || document.getElementById('code').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.classList.add('done'); label.textContent = 'Скопійовано. Встав у Scriptable';
+      setTimeout(() => { btn.classList.remove('done'); label.textContent = 'Скопіювати скрипт'; }, 3500);
+    } catch (e) {
+      const d = document.querySelector('details'); d.open = true;
+      const r = document.createRange(); r.selectNodeContents(document.getElementById('code'));
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      label.textContent = 'Код виділено, скопіюй вручну';
+    }
+  });
+</script>
+
+</body>
+</html>
