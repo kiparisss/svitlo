@@ -1,0 +1,59 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    paths: ['android-bundle.txt']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unpack sources
+        run: |
+          if [ -f android-bundle.txt ]; then
+            python3 - <<'EOF'
+          import os, re
+          src = open('android-bundle.txt', encoding='utf-8').read()
+          n = 0
+          for m in re.finditer(r'^@@@FILE (.+?)\n(.*?)^@@@END$', src, re.S | re.M):
+              path = m.group(1).strip()
+              os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+              open(path, 'w', encoding='utf-8').write(m.group(2))
+              n += 1
+          print('unpacked', n, 'files')
+          EOF
+            rm android-bundle.txt
+          fi
+          python3 android/tools/patch_site.py
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build APK
+        run: gradle -p android assembleDebug --no-daemon --stacktrace
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk svitlo.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Android: зібрано svitlo.apk" || echo "nothing to commit"
+          git push
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" || true
