@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Віджет для iPhone з графіком погодинних відключень Житомирщини">
+<meta name="description" content="Віджет для iPhone та Android з графіком погодинних відключень Житомирщини">
 <meta property="og:title" content="Світло · Житомир">
-<meta property="og:description" content="Віджет для iPhone: коли буде світло. Налаштування за 2 хвилини.">
+<meta property="og:description" content="Віджет для iPhone та Android: коли буде світло. Налаштування за 2 хвилини.">
 <meta name="theme-color" content="#06050a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%237c3aed'/%3E%3Cpath d='M13.2 3 5.5 13.2h5.6L10.3 21l7.7-10.2h-5.6z' fill='white'/%3E%3C/svg%3E">
 <title>Світло · Житомир</title>
@@ -50,6 +50,10 @@
   .btn.done{background:#1f6b45;box-shadow:none}
   .ghost{color:var(--violet2);font-weight:600;text-decoration:none;padding:14px 18px;border-radius:999px;border:1.5px solid rgba(192,132,252,.4)}
   .meta{font-size:14px;color:var(--dim)}
+  .jump{display:flex;gap:8px}
+  .jump a{font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;padding:8px 14px;border-radius:999px;background:var(--surface2);border:1px solid var(--line)}
+  a.btn{text-decoration:none}
+  section{scroll-margin-top:24px}
 
   /* віджет */
   .widget{border-radius:32px;background:linear-gradient(160deg,#211a35,#0f0c18);border:1px solid #3a3054;
@@ -103,7 +107,7 @@
   <section class="hero">
     <div class="brand">Світло · <b>Житомир</b></div>
     <h1>Коли буде <em>світло?</em></h1>
-    <p class="lead">Віджет для iPhone з графіком погодинних відключень <b>Житомирщини</b>. Статус, час до вмикання і графік на добу просто на головному екрані.</p>
+    <p class="lead">Віджет для iPhone та Android з графіком погодинних відключень <b>Житомирщини</b>. Статус, час до вмикання і графік на добу просто на головному екрані.</p>
 
     <div class="widget" aria-label="Приклад віджета">
       <div class="w-q"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.5 13.4h6.2L9.8 22l8.7-11.4h-6.2z" fill="currentColor" style="color:var(--off)"/></svg>Черга 6.1</div>
@@ -124,11 +128,12 @@
       <a class="ghost" href="svitlo-zhytomyr.js" download>Завантажити .js</a>
       <a class="ghost" href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank" rel="noopener">Scriptable в App Store</a>
     </div>
-    <div class="meta">Безкоштовно · 18 КБ · 521 рядків JavaScript</div>
+    <div class="jump"><a href="#iphone">iPhone</a><a href="#android">Android</a></div>
+    <div class="meta">Безкоштовно · 18 КБ · 533 рядків JavaScript</div>
   </section>
 
-  <section>
-    <h2>Налаштування за 2 хвилини</h2>
+  <section id="iphone">
+    <h2>iPhone: налаштування за 2 хвилини</h2>
     <ol class="steps">
       <li><div><b>Встанови Scriptable</b><p>Безкоштовний застосунок з App Store. Саме він запускає віджет.</p></div></li>
       <li><div><b>Додай скрипт</b><p>Натисни «Скопіювати скрипт» вище. У Scriptable натисни <code>+</code>, встав код і назви скрипт <code>svitlo-zhytomyr</code>.</p></div></li>
@@ -137,10 +142,25 @@
     </ol>
   </section>
 
+  <section id="android">
+    <h2>Android: окремий застосунок</h2>
+    <div class="cta" style="margin-bottom:20px">
+      <a class="btn" href="svitlo.apk" download>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>
+        <span>Завантажити для Android</span>
+      </a>
+    </div>
+    <ol class="steps">
+      <li><div><b>Завантаж і встанови</b><p>Натисни кнопку вище й відкрий файл <code>svitlo.apk</code>. Android попросить дозволити встановлення з цього джерела, погодься.</p></div></li>
+      <li><div><b>Обери підчергу</b><p>Відкрий застосунок «Світло Житомир» і натисни свою підчергу.</p></div></li>
+      <li><div><b>Додай віджет</b><p>Затисни порожнє місце на головному екрані → Віджети → «Світло Житомир».</p></div></li>
+    </ol>
+  </section>
+
   <div class="note"><b>Не знаєш свою підчергу?</b> Знайди її за адресою на <a href="https://www.ztoe.com.ua/unhooking-search.php" target="_blank" rel="noopener" style="color:var(--violet2)">сторінці графіків Житомиробленерго</a>: обери РЕМ, населений пункт і вулицю.</div>
 
   <details>
-    <summary>Переглянути код <span>521 рядків</span></summary>
+    <summary>Переглянути код <span>533 рядків</span></summary>
     <pre><code id="code">Завантаження…</code></pre>
   </details>
 

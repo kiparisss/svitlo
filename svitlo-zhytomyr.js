@@ -97,6 +97,18 @@ function cellIsOff(markup, redClasses) {
   return false
 }
 
+// Ознака кольору клітинки: фон, bgcolor або клас (товщина рамок не враховується)
+function colorSig(markup) {
+  const s = markup.toLowerCase()
+  let m = s.match(/background(?:-color)?\s*:\s*([^;"']+)/)
+  if (m) return "bg:" + m[1].trim()
+  m = s.match(/bgcolor\s*=\s*["']?([^"'\s>]+)/)
+  if (m) return "bgcolor:" + m[1]
+  m = s.match(/class\s*=\s*["']?([^"'>]+)/)
+  if (m) return "class:" + m[1].trim()
+  return s.replace(/\s+/g, " ").trim()
+}
+
 function parseSchedule(html, pid) {
   const redClasses = redCssClasses(html)
 
@@ -112,7 +124,7 @@ function parseSchedule(html, pid) {
     const text = inner.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim()
     if (/^\d\.\d$/.test(text)) continue // це підпис «3.1», а не часова клітинка
     const markup = m[1] + " " + inner.replace(/href\s*=\s*["'][^"']*["']/gi, "")
-    cells.push({ off: cellIsOff(markup, redClasses), sig: markup.replace(/\s+/g, " ").trim() })
+    cells.push({ off: cellIsOff(markup, redClasses), sig: colorSig(markup) })
   }
 
   if (cells.length < SLOTS_PER_DAY) {

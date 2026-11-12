@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Світло Житомир</string>
+    <string name="widget_desc">Чи є світло і коли його увімкнуть</string>
+</resources>
